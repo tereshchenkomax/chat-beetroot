@@ -1,6 +1,7 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import Message from "../Message";
 import Send from "../Send";
+import User from '../User'
 import io from "socket.io-client";
 import "./Chat.css";
 
@@ -26,7 +27,7 @@ class Chat extends Component {
       if (this.state.isLogin) this.addMessage(data);
     });
     this.socket.on("updateUsers", data => {
-      console.log(data);
+      if (this.state.isLogin) this.addUsers(data);
     });
   };
   changeMessage = event => {
@@ -48,6 +49,11 @@ class Chat extends Component {
       messages: [...messages, { user: data.name, text: data.message }]
     }));
   };
+  addUsers = (data) => {
+    this.setState(({users}) => ({
+      users: data
+    }))
+  }
   sendMessage = event => {
     event.preventDefault();
     const { currentUser, inputMsg } = this.state;
@@ -71,20 +77,24 @@ class Chat extends Component {
       );
     }
     return (
-      <div className="chat">
-        <div className="message-list">
-          <div className="messages">
-            {messages.map((item, key) => (
-              <Message item={item} key={key} />
-            ))}
+        <Fragment>
+          <div className="chat">
+            <div className="message-list">
+              <div className="messages">
+                {messages.map((item, key) => (
+                    <Message item={item} key={key} />
+                ))}
+              </div>
+            </div>
+            <Send
+                value={inputMsg}
+                onChange={this.changeMessage}
+                onSend={this.sendMessage}
+            />
           </div>
-        </div>
-        <Send
-          value={inputMsg}
-          onChange={this.changeMessage}
-          onSend={this.sendMessage}
-        />
-      </div>
+          <User users={users} />
+        </Fragment>
+
     );
   }
 }
